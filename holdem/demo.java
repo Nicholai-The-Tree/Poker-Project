@@ -13,7 +13,7 @@ public class demo{
 		Scanner in = new Scanner(System.in);
 		LinkedList<player> players = new LinkedList<player>();
 		int ppop, buyin;
-		boolean blind;
+		boolean blind = false;
 		
 		System.out.print("How many players are at the table today?:	");
 		ppop = in.nextInt();
@@ -24,15 +24,15 @@ public class demo{
 			ppop = in.nextInt();
 		}
 		
-		System.out.print("What's the buy-in for today's game?:\t");
+		System.out.print("What's the buy-in for today's game?:\t\t$");
 		buyin = in.nextInt();
-		in.nextLine();
-		System.out.print("Will this game use a blind system?:\t");
+		
+		in.nextLine();	//to clear scanner
+		
+		System.out.print("Will this game use a blind system?:\t\t");
 		switch((in.nextLine()).charAt(0)){
 			case 'y': case 'Y':
 				blind = true;
-			default:
-				blind = false;
 		}
 		
 		System.out.print("\nWhat are the players names?:\t");
@@ -41,7 +41,8 @@ public class demo{
 			players.add(new player(in.nextLine(),buyin));
 		}
 		
+		System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 		game holdem = new game(players,blind);
-		
+		holdem.table();
 	}
 }

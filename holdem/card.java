@@ -1,12 +1,10 @@
 /*
  * card class for game
- * fields: value and suit of a card
- * methods: getVal(), getSuit()
  */
 
 import java.util.*;
 
-public class card{
+public class card implements Comparable<card>{
 	private int value;
 	private String suit;
 	
@@ -15,11 +13,27 @@ public class card{
 		this.suit = suit;
 	}
 	
+	//get suit value
 	public String getSuit(){
 		return suit;
 	}
 	
+	//get card value
 	public int getVal(){
 		return value;
+	}
+	
+	//compare card values (ascending order)
+	public int compareTo(card c){
+		if(c.getVal()==value)
+			return 0;
+		else if(c.getVal()>value)
+			return -1;
+		else
+			return 1;
+	}
+	
+	public String toString(){
+		return this.suit + " " + this.value;
 	}
 }
