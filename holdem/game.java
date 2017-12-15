@@ -16,7 +16,6 @@ public class game{
 	private int pot, big, small, highBet, bet, choice;
 	private boolean gameover = false, start = true;
 	private Scanner in = new Scanner(System.in);
-	private Sorter sort = new Sorter();
 	
 	public game(LinkedList<player> players,boolean blind){
 		this.players = players;
@@ -278,25 +277,22 @@ public class game{
 	//checks for straights
 	public boolean straight(player p){
 		card[] hand = p.getHand();
-		int count = 0, n1, n2;
-		river.add(hand[0]);
-		river.add(hand[1]);
-		sort.sort(river);
-		ListIterator<card> c = river.listIterator();
+		int count = 0, n1 = 0;
+		LinkedList<card> riv = new LinkedList<card>();
+		riv.addAll(river); riv.add(hand[0]); riv.add(hand[1]);
+		Collections.sort(riv);
+		Iterator c = riv.iterator();
 		while(c.hasNext()){
-			n1 = (c.next()).getVal();
-			if(c.hasNext())
-				n2 = (c.next()).getVal()+1;
-			else
-				break;
-			if(n1==n2){
-				++count;
-				c.previous();
+			card crd = (card)c.next();
+			if(count==0)
+				n1=crd.getVal();
+			else if(count<5 && n1==crd.getVal()-1){
+				n1=crd.getVal()+1;
+				count++;
 			}
 			else if(count==5)
 				return true;
 			else{
-				c.previous();
 				count=0;
 			}
 		}
@@ -331,32 +327,42 @@ public class game{
 	public void winner(){
 		card[] hand = new card[2];
 		for(player p : players){
+			//	rf:10/sf:9
 			if(flush(p) && straight(p)){
-				sort.sort(river);
+				Collections.sort(river);
 				if((river.peekLast()).getVal()==14 || hand[0].getVal()==14 || hand[1].getVal()==14)
 					p.setRank(10);
 				else
 					p.setRank(9);
 			}
+			//	flush:6
 			else if(flush(p))
 				p.setRank(6);
+			//	strght:5
 			else if(straight(p))
 				p.setRank(5);
 			else{
 				int pairRank = pairs(p);
+				//	fullhouse:7
 				if(pairRank==5)
 					p.setRank(7);
+				//	4ofakind:8
 				else if(pairRank==4)
 					p.setRank(8);
+				//	3ofakind:4
 				else if(pairRank==3)
 					p.setRank(4);
+				//	2pair:3
 				else if(pairRank==2)
 					p.setRank(3);
+				//	pair:2
 				else if(pairRank==1)
 					p.setRank(2);
-				else if(pairRank==0)
+				//	highcard:1
+				else
 					p.setRank(1);
 			}
+			System.out.println(p.getRank());
 		}
 	}
 }
