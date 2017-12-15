@@ -16,7 +16,6 @@ public class player implements Comparable<player>{
 	public player(String name, int bal){
 		this.name = name;
 		balance = bal;
-		rank=0;
 		fold = false;
 	}
 	

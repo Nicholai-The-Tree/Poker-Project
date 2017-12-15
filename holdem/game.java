@@ -4,7 +4,7 @@
 */ 
 
 import java.util.*;
-
+@SuppressWarnings("unchecked")
 public class game{
 	
 	private String[] suits = { "H", "S", "D", "C" }; 
@@ -117,6 +117,9 @@ public class game{
 		}
 		//choose winner and reset
 		else{
+			winner();
+			pot=0;
+			
 			resetOrder();
 			player p = setLast();
 			(players.peek()).setBlind();
@@ -275,13 +278,18 @@ public class game{
 	//checks for straights
 	public boolean straight(player p){
 		card[] hand = p.getHand();
-		int count = 0;
+		int count = 0, n1, n2;
 		river.add(hand[0]);
 		river.add(hand[1]);
 		sort.sort(river);
 		ListIterator<card> c = river.listIterator();
 		while(c.hasNext()){
-			if(((c.next()).getVal())==(c.next()).getVal()+1){
+			n1 = (c.next()).getVal();
+			if(c.hasNext())
+				n2 = (c.next()).getVal()+1;
+			else
+				break;
+			if(n1==n2){
 				++count;
 				c.previous();
 			}
@@ -319,5 +327,37 @@ public class game{
 			return 0;
 	}
 	
+	//set ranks of players
+	public void winner(){
+		card[] hand = new card[2];
+		for(player p : players){
+			if(flush(p) && straight(p)){
+				sort.sort(river);
+				if((river.peekLast()).getVal()==14 || hand[0].getVal()==14 || hand[1].getVal()==14)
+					p.setRank(10);
+				else
+					p.setRank(9);
+			}
+			else if(flush(p))
+				p.setRank(6);
+			else if(straight(p))
+				p.setRank(5);
+			else{
+				int pairRank = pairs(p);
+				if(pairRank==5)
+					p.setRank(7);
+				else if(pairRank==4)
+					p.setRank(8);
+				else if(pairRank==3)
+					p.setRank(4);
+				else if(pairRank==2)
+					p.setRank(3);
+				else if(pairRank==1)
+					p.setRank(2);
+				else if(pairRank==0)
+					p.setRank(1);
+			}
+		}
+	}
 }
 
