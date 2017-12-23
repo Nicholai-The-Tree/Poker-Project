@@ -70,7 +70,6 @@ public class game{
 				else{
 					//if player hasn't folded
 					if(!p.fold()){
-						System.out.println(p + "\n");
 						decisions(p);
 					}
 				}
@@ -89,7 +88,6 @@ public class game{
 				else{
 					//if player hasn't folded
 					if(!p.fold()){
-						System.out.println(p + "\n");
 						decisions(p);
 					}
 				}
@@ -136,12 +134,13 @@ public class game{
 			for(player p:players)
 				System.out.println(p.getName() + " " + p.getRank());
 			player winner = players.peek();
-			System.out.println(winner.getName() + " wins!!!!");
+			JOptionPane.showMessageDialog(null,winner.getName() + " wins!!!!", "alert", JOptionPane.INFORMATION_MESSAGE);
 			winner.win(pot);
 			pot=0;
 			
 			//resest order and move blinds
 			resetOrder();
+			resetRanks();
 			player p = setLast();
 			(players.peek()).setBlind();
 			river.clear();
@@ -154,6 +153,12 @@ public class game{
 		player p = players.pop();
 		players.addLast(p);
 		return p;
+	}
+	
+	//reset ranks of players to 0
+	public void resetRanks(){
+		for(player p : players)
+			p.setRank(0);
 	}
 	
 	//sets last bet for every player to 0
@@ -198,7 +203,7 @@ public class game{
 	
 	//player's decisions
 	public void decisions(player p){
-		choice = 0;
+		choice = 9999;
 		
 		//check if player has current highest bet
 		if(p.equals(highestBet)){
@@ -207,17 +212,17 @@ public class game{
 		}
 		
 		//when player isn't highest better
-		if(choice==0)
+		if(choice==9999)
 			choice = p.choice(highBet);
 		switch(choice){
 			//call/check
-			case 1: call(p); break;
+			case 0: call(p); break;
 			//raise/bet
-			case 2: bet(p); break;
+			case 1: bet(p); break;
 			//all in
-			case 3: allin(p); break;
+			case 2: allin(p); break;
 			//fold
-			case 4: p.setFold(); break;
+			case 3: p.setFold(); break;
 			//show menu again for errors
 			default: decisions(p);
 		}
@@ -362,13 +367,11 @@ public class game{
 	}
 	
 	public void bet(player p){
-		System.out.print("\nBet amount? (it must be x2 last bet for raises and not All In) :" );
-		bet = in.nextInt();
+		bet = Integer.parseInt(JOptionPane.showInputDialog("Your balance = " + p.getBal() + "\nEnter bet amount: "));
 		//error check
 		while(bet<=2*highBet || bet==p.getBal()){
-			System.out.println("\t\tERROR!!!\n\t\tNo cheating the system!\n\t\tEnter a legal value!\n\n");
-			System.out.print("\nBet amount? (must be x2 last bet for raises and not an All In) :" );
-			bet = in.nextInt();
+			JOptionPane.showMessageDialog(null, "WRONG INPUT! raises must be x2 current bet and not an All-in", "alert", JOptionPane.ERROR_MESSAGE);
+			bet = Integer.parseInt(JOptionPane.showInputDialog("Enter bet amount: "));
 		}
 		//set highest better to current player and fix pot and player's balances
 		highBet = bet;
@@ -378,26 +381,17 @@ public class game{
 	
 	public void allin(player p){
 		//make sure that player wants to go through this decision
-		System.out.println("are you sure?");
-		switch((in.nextLine()).charAt(0)){
-			case 'y': case 'Y':
+		int n = JOptionPane.showConfirmDialog(null, "Are you sure?",null,JOptionPane.YES_NO_OPTION);
+		if(n==0){
 			System.out.println("goodluck.");  
 			setPot(p,p.getBal());
 			if(highBet<p.getBal()){
 				highBet = bet;
 				highestBet = p;
 			}
-			break;
-			//back choice
-			case 'n': case 'N':
-				System.out.println("pussssssssssssssssssssssssy");
-				decisions(p);
-				break;
-			//for those who don't follow instructions
-			default:
-				System.out.println("Dude wtf, just say yes or no, for that I fold you");
-				p.setFold();
 		}
+		else
+			decisions(p);
 	}
 }
 

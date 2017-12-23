@@ -3,6 +3,7 @@
  */
 
 import java.util.*;
+import javax.swing.*;
 
 public class player implements Comparable<player>{
 	private String name;
@@ -101,22 +102,18 @@ public class player implements Comparable<player>{
 	//possible choices a player can make
 	public int choice(int bet){
 		if(bet>0){
-			System.out.println("Choose wisely");
-			System.out.println("1.	Call");
-			System.out.println("2.	Raise");
-			System.out.println("3.	All in");
-			System.out.println("4.	Fold\n");
-			System.out.print("\n\tChoice:	");
-			return in.nextInt();
+			Object[] choices = { "Call","Raise","All-In","Fold" };
+			int val = JOptionPane.showOptionDialog(null, this.name + " what shall you do?\nbalance: $" + this.balance + "\nhand: " + this.hand[0] + "    " + this.hand[1], "decisions",
+				JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+				choices, choices[0]);
+			return val;
 		}
 		else{
-			System.out.println("Choose wisely");
-			System.out.println("1.	Check");
-			System.out.println("2.	Bet");
-			System.out.println("3.	All in");
-			System.out.println("4.	Fold\n");
-			System.out.print("\n\tChoice:	");
-			return in.nextInt();
+			Object[] choices = { "Check","Bet","All-In","Fold" };
+			int val = JOptionPane.showOptionDialog(null, this.name + " what shall you do?\nbalance: $" + this.balance + "\nhand: " + this.hand[0] + "    " + this.hand[1], "decisions",
+				JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+				choices, choices[0]);
+			return val;
 		}
 	}
 	
