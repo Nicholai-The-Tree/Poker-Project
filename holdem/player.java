@@ -6,7 +6,7 @@ import java.util.*;
 
 public class player implements Comparable<player>{
 	private String name;
-	private int balance, lastBet, rank;
+	private int balance, lastBet, rank, highcard;
 	private card[] hand = new card[2];
 	private boolean fold, small;
 	private Scanner in = new Scanner(System.in);
@@ -68,13 +68,23 @@ public class player implements Comparable<player>{
 	public void insert(card cards){
 		if(hand[0]==null)
 			hand[0]=cards;
-		else
+		else{
 			hand[1]=cards;
+			if(hand[0].getVal()<hand[1].getVal())
+				highcard = hand[1].getVal();
+			else
+				highcard = hand[0].getVal();
+		}
 	}
 	
 	//get player's hand
 	public card[] getHand(){
 		return hand;
+	}
+	
+	//get highest card
+	public int high(){
+		return highcard;
 	}
 	
 	//side effects for a player bet
@@ -110,14 +120,15 @@ public class player implements Comparable<player>{
 		}
 	}
 	
-	//get rank of player's hand
-	public int getRank(){
-		return rank;
-	}
 	
 	//set a rank for a player
 	public void setRank(int rank){
-		rank = rank;
+		this.rank = rank;
+	}
+	
+	//get rank of player's hand
+	public int getRank(){
+		return rank;
 	}
 	
 	//compare player ranks (descending order)
@@ -131,6 +142,6 @@ public class player implements Comparable<player>{
 	}
 	
 	public String toString(){
-		return "name: " + this.name + "\tbalance: $" + this.balance + "\tcards: (" + hand[0] + "," + hand[1] + ")";
+		return "name: " + this.name + "\tbalance: $" + this.balance + "\tcards: (" + hand[0] + "," + hand[1] + ")" + "\trank: " + this.rank;
 	}
 }

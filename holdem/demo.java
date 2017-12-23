@@ -7,41 +7,32 @@
  */
 
 import java.util.*;
+import javax.swing.*;
 
 public class demo{
 	public static void main(String[] args){
 		Scanner in = new Scanner(System.in);
 		LinkedList<player> players = new LinkedList<player>();
-		int ppop, buyin;
+		int n=0, buyin;
 		boolean blind = false;
 		
-		System.out.print("How many players are at the table today?:	");
-		ppop = in.nextInt();
-		
-		while(ppop<4 || ppop>8){
-			System.out.println("\n\t\tERROR!!!\nThe table only allows a min of 4 and a max of 8");
-			System.out.print("Please enter a legal value:\t");
-			ppop = in.nextInt();
+		n = Integer.parseInt(JOptionPane.showInputDialog("How many players?"));
+		while(n<4 || n>8){
+			if(n<4 || n>8)
+				JOptionPane.showMessageDialog(null, "WRONG INPUT! must be between 4-8", "alert", JOptionPane.ERROR_MESSAGE);
+			n = Integer.parseInt(JOptionPane.showInputDialog("How many players?"));
 		}
 		
-		System.out.print("What's the buy-in for today's game?:\t\t$");
-		buyin = in.nextInt();
+		buyin = Integer.parseInt(JOptionPane.showInputDialog("What's the buy-in for today's game?"));
 		
-		in.nextLine();	//to clear scanner
+		int yn = JOptionPane.showConfirmDialog(null, "Will this game use a blind system?",null,JOptionPane.YES_NO_OPTION);
+		if(yn==0)
+			blind = true;
 		
-		System.out.print("Will this game use a blind system?:\t\t");
-		switch((in.nextLine()).charAt(0)){
-			case 'y': case 'Y':
-				blind = true;
+		for(int i = 1;i<=n;++i){
+			players.add(new player(JOptionPane.showInputDialog("Player " + i + "'s name?"),buyin));
 		}
 		
-		System.out.print("\nWhat are the players names?:\t");
-		for(int i = 1;i<=ppop;++i){
-			System.out.print("\nPlayer " + i + ":\t");
-			players.add(new player(in.nextLine(),buyin));
-		}
-		
-		System.out.println("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
 		game holdem = new game(players,blind);
 		holdem.table();
 	}

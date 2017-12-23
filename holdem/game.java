@@ -4,6 +4,7 @@
 */ 
 
 import java.util.*;
+import javax.swing.*;
 @SuppressWarnings("unchecked")
 public class game{
 	
@@ -26,15 +27,11 @@ public class game{
 				temp.add(new card(i,s));
 		}}
 		if(blind){
-			System.out.print("Small blind value?: ");
-			small = in.nextInt();
+			small = Integer.parseInt(JOptionPane.showInputDialog("Small blind value?"));
 			big = small*2;
-			System.out.println();
 		}
-		else{
-			System.out.print("Ante value?: ");
-			small = in.nextInt();
-		}
+		else
+			small = Integer.parseInt(JOptionPane.showInputDialog("Ante value?"));
 	}
 	
 	//shuffle cards
@@ -62,28 +59,44 @@ public class game{
 		while(!gameover){
 			//blind game
 			if(small>0){
-				
-				//intial preflop bets
-				blindBets();
-				
+				//set pot with blinds
+				if(start==true)
+					blindBets();
 				//player up to play
 				p=setLast();
-				
-				//if player hasn't folded
-				if(!p.fold()){
-					System.out.println(p + "\n");
-					decisions(p);
+				//remove if player has illegal balance
+				if(p.getBal()<=0)
+					players.removeLast();
+				else{
+					//if player hasn't folded
+					if(!p.fold()){
+						System.out.println(p + "\n");
+						decisions(p);
+					}
 				}
-				//need to figure out what to do with folded players
 			}
 			
 			//ante game
 			else{
-				anteBets();
+				//set pot with antes
+				if(start==true)
+					anteBets();
+				//player up to play
+				p=setLast();
+				//remove if player has illegal balance
+				if(p.getBal()<=0)
+					players.removeLast();
+				else{
+					//if player hasn't folded
+					if(!p.fold()){
+						System.out.println(p + "\n");
+						decisions(p);
+					}
+				}
 			}
 			
 			//only quit when 1 player remains
-			if(players.size()<2)
+			if(players.size()==1)
 				gameover = true;
 		}
 	}
@@ -100,33 +113,39 @@ public class game{
 		if(river.size()==0){
 			resetOrder();
 			deck.pop();
-			System.out.println("\t\tTable cards:");
+			System.out.println("\t\tTable cards:\n");
 			river.add(deck.pop());
 			river.add(deck.pop());
 			river.add(deck.pop());
-			System.out.print(river);
+			System.out.println("\t"+river+"\n");
 		}
 		//4th and 5th cards
 		else if(river.size()<5){
 			resetOrder();
 			deck.pop();
 			river.add(deck.pop());
-			System.out.println("\t\tTable cards:");
-			System.out.print(river);
+			System.out.println("\t\tTable cards:\n");
+			System.out.println("\t"+river+"\n");
 		}
 		//choose winner and reset
 		else{
+			//set players' ranks
 			winner();
+			//sort players by rank (highest should be first)
+			Collections.sort(players);
+			for(player p:players)
+				System.out.println(p.getName() + " " + p.getRank());
+			player winner = players.peek();
+			System.out.println(winner.getName() + " wins!!!!");
+			winner.win(pot);
 			pot=0;
 			
+			//resest order and move blinds
 			resetOrder();
 			player p = setLast();
 			(players.peek()).setBlind();
 			river.clear();
 			start = true;
-			//compare players' hands
-			//highest hand wins
-			//player.win(pot)
 		}
 	}
 	
@@ -161,115 +180,60 @@ public class game{
 	//blind bets
 	public void blindBets(){
 		player p;
-		if(start){
-			deal();
-			p = setLast();	p.setBlind();	setPot(p,small);
-			p = setLast();	setPot(p,small*2);
-			highBet = small*2;
-			highestBet = p;
-			start = false;
-		}
+		deal();
+		p = setLast();	p.setBlind();	setPot(p,small);
+		p = setLast();	setPot(p,small*2);
+		highBet = small*2;
+		highestBet = p;
+		start = false;
 	}
 	
 	//ante bets
 	public void anteBets(){
-		if(start){
-			deal();
-			for(player pl:players)
-				setPot(pl,small);
-			start=false;
-		}
+		deal();
+		for(player p:players)
+			setPot(p,small);
+		start=false;
 	}
 	
 	//player's decisions
 	public void decisions(player p){
+		choice = 0;
 		
 		//check if player has current highest bet
 		if(p.equals(highestBet)){
 			highBet=0;
 			choice = p.choice(highBet);
-			//show cards if player does not reraise *not finished, must find way to reraise properly without over coding*
-			if(choice==1)
-				flip();
-			System.out.println();
 		}
 		
 		//when player isn't highest better
-		else{
+		if(choice==0)
 			choice = p.choice(highBet);
-			//error check
-			while(choice>4 || choice<1){
-				System.out.println("\t\tERROR!!!\n\t\tNo cheating the system!\n\t\tEnter a legal value according to the menu!\n\n");
-				choice = p.choice(highBet);
-			}
-			
-			switch(choice){
-				//	call/check
-				case 1:
-					//if player has already bet
-					if(highBet>0 && p.getBet()>0)
-						setPot(p,highBet-p.getBet());
-					//else just a regular match for the bet
-					else
-						setPot(p,highBet);
-					break;
-				//	raise/bet
-				case 2:
-					System.out.print("\nBet amount? (it must be x2 last bet for raises and not All In) :" );
-					bet = in.nextInt();
-					//error check
-					while(bet<=2*highBet || bet==p.getBal()){
-						System.out.println("\t\tERROR!!!\n\t\tNo cheating the system!\n\t\tEnter a legal value!\n\n");
-						System.out.print("\nBet amount? (must be x2 last bet for raises and not an All In) :" );
-						bet = in.nextInt();
-					}
-					//set highest better to current player and fix pot and player's balances
-					highBet = bet;
-					highestBet = p;
-					setPot(p,bet);
-					break;
-				//	all in
-				case 3:
-					//make sure that player wants to go through this decision
-					System.out.println("are you sure?");
-					switch((in.nextLine()).charAt(0)){
-						case 'y': case 'Y':
-							System.out.println("goodluck.");  
-							setPot(p,p.getBal());
-							if(highBet<p.getBal()){
-								highBet = bet;
-								highestBet = p;
-							}
-							break;
-						//back choice
-						case 'n': case 'N':
-							System.out.println("pussssssssssssssssssssssssy");
-							decisions(p);
-							break;
-						//for those who don't follow instructions
-						default:
-							System.out.println("Dude wtf, just say yes or no, for that I fold you");
-							p.setFold();
-							break;
-					}
-				//	fold
-				case 4:
-					p.setFold();
-			}
+		switch(choice){
+			//call/check
+			case 1: call(p); break;
+			//raise/bet
+			case 2: bet(p); break;
+			//all in
+			case 3: allin(p); break;
+			//fold
+			case 4: p.setFold(); break;
+			//show menu again for errors
+			default: decisions(p);
 		}
 	}
 	
 	//checks for flush
 	public boolean flush(player p){
 		card[] hand = p.getHand();
-		int count1 = 0, count2 = 0;
-		for(card c : river){
-			if((c.getSuit()).equals(hand[0].getSuit()))
-				++count1;
+		int count1 = 0;
+		LinkedList<card> riv = new LinkedList<card>();
+		riv.addAll(river); riv.add(hand[0]);
+		for(card c : riv){
 			if((c.getSuit()).equals(hand[1].getSuit()))
-				++count2;
+				++count1;
 		}
-		if(count1==5 || count2==5)
+		if(count1==5)
 			return true;
 		return false;
 	}
@@ -281,13 +245,11 @@ public class game{
 		LinkedList<card> riv = new LinkedList<card>();
 		riv.addAll(river); riv.add(hand[0]); riv.add(hand[1]);
 		Collections.sort(riv);
-		Iterator c = riv.iterator();
-		while(c.hasNext()){
-			card crd = (card)c.next();
+		for(card c : riv){
 			if(count==0)
-				n1=crd.getVal();
-			else if(count<5 && n1==crd.getVal()-1){
-				n1=crd.getVal()+1;
+				n1=c.getVal();
+			else if(count<5 && n1==c.getVal()-1){
+				n1=c.getVal()+1;
 				count++;
 			}
 			else if(count==5)
@@ -302,12 +264,21 @@ public class game{
 	//checks for pairs
 	public int pairs(player p){
 		card[] hand = p.getHand();
-		int count1 = 0, count2 = 0;
-		for(card c : river){
-			if(c.getVal()==hand[0].getVal())
-				++count1;
-			if(c.getVal()==hand[1].getVal())
-				++count2;
+		int count1 = 1, count2 = 1;
+		if(hand[0].getVal()!=hand[1].getVal()){
+			for(card c : river){
+				if(c.getVal()==hand[0].getVal())
+					++count1;
+				if(c.getVal()==hand[1].getVal())
+					++count2;
+			}
+		}
+		else{
+			++count1;
+			for(card c : river){
+				if(c.getVal()==hand[0].getVal())
+					++count1;
+			}
 		}
 		if((count1==2 && count2==3) || (count1==3 && count2==2))
 			return 5;//full house
@@ -325,8 +296,9 @@ public class game{
 	
 	//set ranks of players
 	public void winner(){
-		card[] hand = new card[2];
+		player highcard = null;
 		for(player p : players){
+			card[] hand = p.getHand();
 			//	rf:10/sf:9
 			if(flush(p) && straight(p)){
 				Collections.sort(river);
@@ -359,10 +331,72 @@ public class game{
 				else if(pairRank==1)
 					p.setRank(2);
 				//	highcard:1
-				else
-					p.setRank(1);
+				else{
+					if(highcard!=null){
+						if(highcard.high()<p.high()){
+							highcard.setRank(0);
+							p.setRank(1);
+							highcard=p;
+						}
+					}
+					else{
+						highcard=p;
+						p.setRank(1);
+					}
+				}
 			}
-			System.out.println(p.getRank());
+		}
+	}
+	
+	public void call(player p){
+		//if player is highest better
+		if(p.equals(highestBet))
+			flip();
+		else{
+			if(highBet>0 && p.getBet()>0)
+			setPot(p,highBet-p.getBet());
+			//else just a regular match for the bet
+			else
+				setPot(p,highBet);
+		}
+	}
+	
+	public void bet(player p){
+		System.out.print("\nBet amount? (it must be x2 last bet for raises and not All In) :" );
+		bet = in.nextInt();
+		//error check
+		while(bet<=2*highBet || bet==p.getBal()){
+			System.out.println("\t\tERROR!!!\n\t\tNo cheating the system!\n\t\tEnter a legal value!\n\n");
+			System.out.print("\nBet amount? (must be x2 last bet for raises and not an All In) :" );
+			bet = in.nextInt();
+		}
+		//set highest better to current player and fix pot and player's balances
+		highBet = bet;
+		highestBet = p;
+		setPot(p,bet);
+	}
+	
+	public void allin(player p){
+		//make sure that player wants to go through this decision
+		System.out.println("are you sure?");
+		switch((in.nextLine()).charAt(0)){
+			case 'y': case 'Y':
+			System.out.println("goodluck.");  
+			setPot(p,p.getBal());
+			if(highBet<p.getBal()){
+				highBet = bet;
+				highestBet = p;
+			}
+			break;
+			//back choice
+			case 'n': case 'N':
+				System.out.println("pussssssssssssssssssssssssy");
+				decisions(p);
+				break;
+			//for those who don't follow instructions
+			default:
+				System.out.println("Dude wtf, just say yes or no, for that I fold you");
+				p.setFold();
 		}
 	}
 }
